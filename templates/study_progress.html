@@ -189,12 +189,12 @@
         box-shadow: 0 15px 40px var(--primary-glow);
         cursor: pointer;
         transition: 0.4s;
-        z-index: 2000;
-        transform: translateZ(100px);
+        z-index: 99999;
+        pointer-events: auto !important;
     }
 
     .add-subject-fab:hover {
-        transform: scale(1.1) rotate(90deg) translateZ(120px);
+        transform: scale(1.1) rotate(90deg);
         box-shadow: 0 20px 60px var(--primary-glow);
     }
 
