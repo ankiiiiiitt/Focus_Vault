@@ -890,9 +890,18 @@ def upload_notes():
             )
 
             questions_text = ask_ai(
-                f"Generate 5 exam questions in numbered format based on the following text:\n{text_to_process}"
+                f"Generate exactly 5 exam questions based on the following text. Return ONLY the questions, one per line. No introduction, no numbers, no markdown, no HTML tags:\n{text_to_process}",
+                format_output=False
             )
-            questions_list = [q.strip() for q in questions_text.split("\n") if q.strip()]
+            import re
+            questions_list = []
+            for line in questions_text.split("\n"):
+                line = line.strip()
+                if line:
+                    clean_line = re.sub(r'^(\d+[\.\)]|[\-\*]|Q\d+:)\s*', '', line)
+                    if clean_line:
+                        questions_list.append(clean_line)
+            questions_list = questions_list[:5]
 
             return render_template(
                 "upload_result.html",

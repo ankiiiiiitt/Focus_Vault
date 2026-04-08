@@ -82,7 +82,7 @@
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path></svg>
         </button>
     </div>
-    <div class="content-box">{{ summary }}</div>
+    <div class="content-box">{{ summary | safe }}</div>
     
     <div class="section-title" style="display: flex; justify-content: space-between; align-items: center;">
         Exam Questions
@@ -92,7 +92,7 @@
     </div>
     <div class="content-box">
         {% for q in questions %}
-            <p>{{ q }}</p>
+            <p style="margin-bottom: 12px;"><strong>Q{{ loop.index }}:</strong> {{ q }}</p>
         {% endfor %}
     </div>
 
