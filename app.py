@@ -1,4 +1,8 @@
 import os
+from dotenv import load_dotenv
+# Load environment variables before anything else
+load_dotenv()
+
 import datetime
 import random
 import PyPDF2
@@ -9,9 +13,7 @@ from pymongo import MongoClient
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_mail import Mail, Message
 from config import client
-from dotenv import load_dotenv
 
-load_dotenv()
 
 app = Flask(__name__)
 app.secret_key = "supersecretkey"
@@ -67,6 +69,9 @@ def ask_ai(prompt, format_output=True):
         return cached["response"]
 
     try:
+        if getattr(client, '_api_key', None) == "MISSING":
+            return "AI service is currently not configured (API key missing)."
+
         response = client.chat.completions.create(
             messages=[{"role": "user", "content": prompt}],
             model="llama-3.3-70b-versatile"
@@ -80,7 +85,10 @@ def ask_ai(prompt, format_output=True):
 
     except Exception as e:
         print("GROQ ERROR:", e)
+        if "api_key" in str(e).lower() or "401" in str(e):
+            return "Invalid API Key. Please check your .env file."
         return "AI service temporarily unavailable."
+
 
     cache_col.insert_one({"prompt": prompt, "response": output})
     return output
@@ -386,6 +394,10 @@ def chat_api():
     chat_doc["messages"].append(new_user_msg)
     
     try:
+        # Check if client is initialized with a valid key
+        if getattr(client, '_api_key', None) == "MISSING":
+             return {"reply": "AI service is currently not configured (API key missing in .env). Please add your GROQ_API_KEY to the .env file and restart the server."}, 200
+
         response = client.chat.completions.create(
             messages=chat_doc["messages"],
             model="llama-3.3-70b-versatile"
@@ -408,7 +420,11 @@ def chat_api():
 
     except Exception as e:
         print("GROQ CHAT ERROR:", e)
+        # If it's an authentication error, provide a clearer message
+        if "api_key" in str(e).lower() or "401" in str(e):
+             return {"reply": "Invalid API Key. Please check your GROQ_API_KEY in the .env file."}, 200
         return {"error": "AI service temporarily unavailable."}, 500
+
 
 # ================= LOGIN =================
 @app.route("/login", methods=["GET", "POST"])
